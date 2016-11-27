@@ -33,7 +33,11 @@ namespace ProjectionProblem
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-      optionsBuilder.UseSqlite("Data source=ProjectionProblem.db");
+      // optionsBuilder.UseSqlite("Data source=ProjectionProblem.db");
+      optionsBuilder.UseSqlServer(
+        "Server = (localdb)\\mssqllocaldb; Database = ProjectionProblem; Trusted_Connection = True; ");
+
+
     }
   }
 
@@ -59,25 +63,25 @@ namespace ProjectionProblem
    
     private static void RunProjectionTests()
     {
-      using (var context1 = new MyContext())
-      {
-        Console.WriteLine("------FixUp results multiple queries------------------------");
-        context1.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
-        var parents = context1.Parents.ToList();
-        var children = context1.Children.ToList();
-        var parent = parents.FirstOrDefault(p => p.Id == 1);
-        Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
-      }
+      //using (var context1 = new MyContext())
+      //{
+      //  Console.WriteLine("------FixUp results multiple queries------------------------");
+      //  context1.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
+      //  var parents = context1.Parents.ToList();
+      //  var children = context1.Children.ToList();
+      //  var parent = parents.FirstOrDefault(p => p.Id == 1);
+      //  Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
+      //}
 
-      using (var context2 = new MyContext())
-      {
-        context2.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
-        Console.WriteLine("------FixUp results of projection------------------------");
+      //using (var context2 = new MyContext())
+      //{
+      //  context2.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
+      //  Console.WriteLine("------FixUp results of projection------------------------");
 
-        var newtype = context2.Parents.Select(p => new {Parent = p, p.Children}).ToList();
-        var parent = newtype.FirstOrDefault(p => p.Parent.Id == 1).Parent;
-        Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
-      }
+      //  var newtype = context2.Parents.Select(p => new {Parent = p, p.Children}).ToList();
+      //  var parent = newtype.FirstOrDefault(p => p.Parent.Id == 1).Parent;
+      //  Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
+      //}
       using (var context3 = new MyContext())
       {
         context3.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
@@ -88,25 +92,34 @@ namespace ProjectionProblem
         var parent = newtype.FirstOrDefault(p => p.Parent.Id == 1).Parent;
         Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
       }
-      using (var context4 = new MyContext())
-      {
-        Console.WriteLine("------FixUp results of multiple queries with filter------------------------");
-        context4.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
-        var parents = context4.Parents.ToList();
-        var children = context4.Children.Where(c => c.Description == "Child2").ToList();
+      using (var context3 = new MyContext()) {
+        context3.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
+        Console.WriteLine("------Filter children in projection with ToList workaround------------------------");
 
-        var parent = parents.FirstOrDefault(p => p.Id == 1);
+        var newtype = context3.Parents.Select(p =>
+          new { Parent = p, Children = p.Children.Where(c => c.Description == "Child2").ToList() }).ToList();
+        var parent = newtype.FirstOrDefault(p => p.Parent.Id == 1).Parent;
         Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
       }
-      using (var context5 = new MyContext())
-      {
-        Console.WriteLine("--------Load with Filter----------------------");
-        context5.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
-        var parent = context5.Parents.Find(1);
+      //using (var context4 = new MyContext())
+      //{
+      //  Console.WriteLine("------FixUp results of multiple queries with filter------------------------");
+      //  context4.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
+      //  var parents = context4.Parents.ToList();
+      //  var children = context4.Children.Where(c => c.Description == "Child2").ToList();
 
-        context5.Entry(parent).Collection(p => p.Children).Query().Where(c => c.Description == "Child2").ToList();
-        Console.WriteLine("wow that's a lot of queries!");
-      }
+      //  var parent = parents.FirstOrDefault(p => p.Id == 1);
+      //  Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
+      //}
+      //using (var context5 = new MyContext())
+      //{
+      //  Console.WriteLine("--------Load with Filter----------------------");
+      //  context5.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
+      //  var parent = context5.Parents.Find(1);
+
+      //  context5.Entry(parent).Collection(p => p.Children).Query().Where(c => c.Description == "Child2").ToList();
+      //  Console.WriteLine("wow that's a lot of queries!");
+      //}
     }
   }
 }
