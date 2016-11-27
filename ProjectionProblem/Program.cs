@@ -50,7 +50,16 @@ namespace ProjectionProblem
         context.Parents.Add(parent);
         context.SaveChanges();
       }
-      using (var context1 = new MyContext()) {
+
+      RunProjectionTests();
+     
+    }
+
+   
+    private static void RunProjectionTests()
+    {
+      using (var context1 = new MyContext())
+      {
         Console.WriteLine("------FixUp results multiple queries------------------------");
         context1.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
         var parents = context1.Parents.ToList();
@@ -59,24 +68,27 @@ namespace ProjectionProblem
         Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
       }
 
-      using (var context2 = new MyContext()) {
+      using (var context2 = new MyContext())
+      {
         context2.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
         Console.WriteLine("------FixUp results of projection------------------------");
 
-        var newtype = context2.Parents.Select(p => new { Parent = p, p.Children }).ToList();
+        var newtype = context2.Parents.Select(p => new {Parent = p, p.Children}).ToList();
         var parent = newtype.FirstOrDefault(p => p.Parent.Id == 1).Parent;
         Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
       }
-      using (var context3 = new MyContext()) {
+      using (var context3 = new MyContext())
+      {
         context3.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
         Console.WriteLine("------Filter children in projection------------------------");
 
         var newtype = context3.Parents.Select(p =>
-          new { Parent = p, Children = p.Children.Where(c => c.Description == "Child2") }).ToList();
+          new {Parent = p, Children = p.Children.Where(c => c.Description == "Child2")}).ToList();
         var parent = newtype.FirstOrDefault(p => p.Parent.Id == 1).Parent;
         Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
       }
-      using (var context4 = new MyContext()) {
+      using (var context4 = new MyContext())
+      {
         Console.WriteLine("------FixUp results of multiple queries with filter------------------------");
         context4.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
         var parents = context4.Parents.ToList();
@@ -84,9 +96,9 @@ namespace ProjectionProblem
 
         var parent = parents.FirstOrDefault(p => p.Id == 1);
         Console.WriteLine($"Parent 1 Children Count: {parent.Children.Count}");
-
       }
-      using (var context5 = new MyContext()) {
+      using (var context5 = new MyContext())
+      {
         Console.WriteLine("--------Load with Filter----------------------");
         context5.GetService<ILoggerFactory>().AddProvider(new MyLoggerProvider());
         var parent = context5.Parents.Find(1);
